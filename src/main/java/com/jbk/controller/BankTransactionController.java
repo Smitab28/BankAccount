@@ -1,8 +1,10 @@
 package com.jbk.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.jbk.entity.BankTransaction;
 import com.jbk.entity.Payment;
+import com.jbk.exception.NoContentExceptionHandle;
 import com.jbk.exception.ResourceAlreadyExistException;
 import com.jbk.model.TransactionHistory;
 import com.jbk.service.BankTransactionService;
@@ -56,4 +59,24 @@ public class BankTransactionController {
 		else
 			throw new ResourceAlreadyExistException("Resource Already exist");
 	}
+	
+	@GetMapping("/get-all-transactions")
+	public ResponseEntity<List<TransactionHistory>> getAllTransactionDetails(){
+		List <TransactionHistory> listOfTransactions = service.getAllTransactionDetails();
+		if(listOfTransactions.isEmpty())
+			throw new NoContentExceptionHandle("Transactions not performed yet...!!!");
+		else
+			return ResponseEntity.ok(listOfTransactions);
+	}
+	
+	 @GetMapping("/export-to-excel")
+	    public ResponseEntity<String> exportIntoExcelFile() throws IOException {
+	        List <TransactionHistory> listOfTransactions = service.getAllTransactionDetails();
+	        for (TransactionHistory transactionHistory : listOfTransactions) {
+				System.out.println(transactionHistory);
+			}
+	        //ExcelGenerator generator = new ExcelGenerator(listOfProducts);
+	        String msg = service.generateExcelFile(listOfTransactions);
+	        return  new ResponseEntity<String>(msg,HttpStatus.OK);
+	    }
 }

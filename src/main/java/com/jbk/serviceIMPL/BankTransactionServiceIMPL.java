@@ -1,11 +1,18 @@
 package com.jbk.serviceIMPL;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import com.jbk.dao.AccountDao;
 import com.jbk.dao.BankTransactionDao;
 import com.jbk.entity.Account;
@@ -113,8 +120,92 @@ public class BankTransactionServiceIMPL implements BankTransactionService {
 		return dao.getTransactionDetailsOfAccountNumber(accountNumber);
 	}
 	
+	@Override
 	public boolean perfomPayment(Payment payment) {
 		return dao.perfomPayment(payment);
 	}
 
+	private XSSFWorkbook write(List<TransactionHistory> listOfTransactions) {
+		XSSFWorkbook workbook = new XSSFWorkbook(); 
+	    XSSFSheet sheet;
+        sheet = workbook.createSheet("Transaction History");
+        Row row = sheet.createRow(0);
+        CellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeight(16);
+        style.setFont(font);
+        createCell(row, 0, "transactionId");
+        createCell(row, 1, "accountNumber");
+        createCell(row, 2, "Source accountNumber");
+        createCell(row, 3, "userId");
+        createCell(row, 4, "transactionType");
+        createCell(row, 5, "transactionAmount");
+        createCell(row, 6, "transactionStatus");
+        createCell(row, 7, "transactionReasonCode");
+        createCell(row, 8, "transactionCreatedAt");
+        
+        int rowCount = 1;
+        for (TransactionHistory transactionHistory: listOfTransactions) {
+             row = sheet.createRow(rowCount++);
+            int columnCount = 0;
+            createCell(row, columnCount++, transactionHistory.getTransactionId());
+            createCell(row, columnCount++, transactionHistory.getTransactionAccountNumber());
+            createCell(row, columnCount++, transactionHistory.getTransactionSource());
+            createCell(row, columnCount++, transactionHistory.getUserId());
+            createCell(row, columnCount++, transactionHistory.getTransactionType());
+            createCell(row, columnCount++, transactionHistory.getTransactionAmount());
+            createCell(row, columnCount++, transactionHistory.getTransactionStatus());
+            createCell(row, columnCount++, transactionHistory.getTransactionReasonCode());
+            createCell(row, columnCount++, transactionHistory.getTransactionCreatedAt());
+        }
+        
+        return workbook;
+        
+    }
+    private void createCell(Row row, int columnCount, Object valueOfCell) {
+       // sheet.autoSizeColumn(columnCount);
+        Cell cell = row.createCell(columnCount);
+        if (valueOfCell instanceof Integer) {
+            cell.setCellValue((Integer) valueOfCell);
+        } else if (valueOfCell instanceof Long) {
+            cell.setCellValue((Long) valueOfCell);
+        } else if (valueOfCell instanceof String) {
+            cell.setCellValue((String) valueOfCell);
+        } else if(valueOfCell instanceof Double) {
+        	cell.setCellValue((double) valueOfCell);
+        } else if(valueOfCell instanceof LocalDateTime) {
+        	cell.setCellValue((LocalDateTime)valueOfCell);
+        }
+        else {
+            cell.setCellValue((Boolean) valueOfCell);
+        }
+        
+    }
+    
+    public String generateExcelFile(List<TransactionHistory> listOfTransactions) {
+    	
+    	XSSFWorkbook workbook = write(listOfTransactions);
+        String filePath = System.getProperty("user.home");//dynamic path
+        filePath = filePath+"/Downloads/TransactionDetails.xlsx";
+		File file = new File(filePath);	
+        FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(file);
+			workbook.write(fos);
+			workbook.close();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+        
+        return "Export into Excel Successfully";
+    }
+
+	@Override
+	public List<TransactionHistory> getAllTransactionDetails() {
+		return dao.getAllTransactionDetails();
+	}
+	
+	
 }

@@ -137,6 +137,38 @@ public class BankTransactionDaoIMPL implements BankTransactionDao{
 		return isSaved;
 	}
 
+	@Override
+	public List<TransactionHistory> getAllTransactionDetails() {
+		Session session = null;
+		TransactionHistory transactionHistory = new TransactionHistory();
+		List<TransactionHistory> list= new ArrayList<TransactionHistory>();
+		List<BankTransaction> bankList = null;
+		int i=0;
+		try {
+			session = sf.openSession();
+			bankList = session.createCriteria(BankTransaction.class).list();
+			for (BankTransaction bankTransaction : bankList) {
+				transactionHistory.setTransactionId(bankTransaction.getTransactionId());
+				transactionHistory.setTransactionAccountNumber(bankTransaction.getAccount().getAccountNumber());
+				transactionHistory.setUserId(bankTransaction.getAccount().getUser().getUserId());
+				transactionHistory.setTransactionType(bankTransaction.getTransactionType());
+				transactionHistory.setTransactionAmount(bankTransaction.getAmount());
+				transactionHistory.setTransactionSource(bankTransaction.getSource());
+				transactionHistory.setTransactionStatus(bankTransaction.getStatus());
+				transactionHistory.setTransactionReasonCode(bankTransaction.getReasonCode());
+				transactionHistory.setTransactionCreatedAt(bankTransaction.getCreatedAt());
+				list.add(i, transactionHistory);
+				i++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			if(session!=null)
+				session.close();
+		}
+		return list;
+	}
+
 	
 	
 }
