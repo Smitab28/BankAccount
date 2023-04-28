@@ -13,4 +13,6 @@ public interface BankTransactionService {
 	public String performAccountToAcountTransactions(BankTransaction bankTransaction);
 	public List<TransactionHistory> getTransactionDetailsOfAccountNumber(String accountNumber);
 	public boolean perfomPayment(Payment payment);
+	public String generateExcelFile(List<TransactionHistory> listOfTransactions);
+	public List<TransactionHistory> getAllTransactionDetails();
 }

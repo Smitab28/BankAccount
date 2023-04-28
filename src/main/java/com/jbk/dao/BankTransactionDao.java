@@ -13,5 +13,6 @@ public interface BankTransactionDao {
 	public String performAccountToAcountTransactions(BankTransaction bankTransaction);
 	public List<TransactionHistory> getTransactionDetailsOfAccountNumber(String accountNumber);
 	public boolean perfomPayment(Payment payment);
+	public List<TransactionHistory> getAllTransactionDetails();
 
 }
